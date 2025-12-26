@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Code Compiler</title>
+  <style>
+    body {
+      font-family:'Times New Roman', Times, serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      margin: 0;
+      font-size: 30px;
+      padding: 40px;
+      color: #333;
+    }
+    .section {
+      background-color: #ffffff;
+      padding: 25px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    h2, h3 { margin-top: 0; font-weight: 600; font-size: 25px; }
+    textarea, select, button {
+      width: 100%;
+      padding: 12px 16px;
+      margin-top: 10px;
+      font-size: 24px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family:'Times New Roman', Times, serif;
+      box-sizing: border-box;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    textarea:focus, select:focus, button:focus {
+      border-color: #1976d2;
+      box-shadow: 0 0 5px rgba(25, 118, 210, 0.5);
+      outline: none;
+    }
+    button {
+      background-color: #1976d2;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    button:hover { background-color: #125ea9; transform: translateY(-1px); }
+    button:active { background-color: #0d47a1; transform: scale(0.98); }
+    pre {
+      background-color: #212121;
+      color: #00ff90;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    label { font-weight: 500; font-size: 18px; 
+      font-size: 24px;}
+  </style>
+</head>
+<body>
+  <div class="section">
+    <h2>Enter Prompt (Describe what to generate):</h2>
+    <textarea id="prompt" rows="4">Swap two numbers in Java</textarea>
+  </div>
+
+  <div class="section">
+    <label for="language">Choose Language:</label>
+    <select id="language">
+      <option value="python3">Python 3</option>
+      <option value="java">Java</option>
+      <option value="cpp17">C++</option>
+    </select>
+  </div>
+
+  <div class="section">
+    <button onclick="generateCode()">Generate Code</button>
+  </div>
+
+  <div class="section">
+    <h3>Generated Code:</h3>
+    <textarea id="code" rows="10"></textarea>
+  </div>
+
+  <div class="section">
+    <label for="stdin">Program Input (optional, for input()):</label>
+    <textarea id="stdin" rows="3" placeholder="Enter input values separated by spaces or new lines"></textarea>
+  </div>
+
+  <div class="section">
+    <button onclick="submitCode()">Run Code</button>
+  </div>
+
+  <div class="section">
+    <h3>Output:</h3>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    async function generateCode() {
+      const prompt = document.getElementById("prompt").value;
+      const language = document.getElementById("language").value;
+
+      const response = await fetch("http://127.0.0.1:5000/generate-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, language })
+      });
+
+      const data = await response.json();
+      document.getElementById("code").value = data.code || data.error || "Failed to generate code";
+    }
+
+    async function submitCode() {
+      const code = document.getElementById("code").value;
+      const language = document.getElementById("language").value;
+      const stdin = document.getElementById("stdin").value;
+
+      const response = await fetch("http://127.0.0.1:5000/run-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, language, stdin })
+      });
+
+      const data = await response.json();
+      document.getElementById("output").textContent = data.output || data.error || "Failed to compile code";
+    }
+  </script>
+</body>
+</html>
+
